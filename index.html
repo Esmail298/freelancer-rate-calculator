@@ -3,85 +3,159 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Freelancer Rate Calculator</title>
+<title>Freelancing Profit Calculator</title>
 <style>
-  body {
-    font-family: Arial, sans-serif;
-    max-width: 600px;
-    margin: 20px auto;
-    padding: 15px;
-    background-color: #f5f5f5;
-    box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    border-radius: 8px;
-  }
-  h2 {
-    text-align: center;
-    color: #333;
-  }
-  input[type=number] {
-    width: 100%;
-    padding: 10px;
-    margin: 8px 0 16px 0;
-    box-sizing: border-box;
-    font-size: 16px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-  }
-  button {
-    width: 100%;
-    background-color: #007bff;
-    color: white;
-    padding: 12px;
-    font-size: 18px;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-  }
-  button:hover {
-    background-color: #0056b3;
-  }
-  #result {
-    margin-top: 20px;
-    font-size: 20px;
-    text-align: center;
-    color: #222;
-    font-weight: bold;
-  }
+  body { font-family: Arial, sans-serif; max-width: 500px; margin: 20px auto; }
+  label { display: block; margin-top: 15px; }
+  input, select { width: 100%; padding: 8px; margin-top: 5px; }
+  input[type="number"] { -moz-appearance: textfield; }
+  input::-webkit-outer-spin-button,
+  input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  button { margin-top: 20px; padding: 10px 15px; font-size: 16px; }
+  .result { margin-top: 20px; background: #f0f0f0; padding: 15px; border-radius: 5px; }
 </style>
 </head>
 <body>
-<h2>Freelancer Rate Calculator</h2>
-<input type="number" id="hours" placeholder="Hours worked" />
-<input type="number" id="targetIncome" placeholder="Target Income (in your currency)" />
-<input type="number" id="tax" placeholder="Tax %" />
-<input type="number" id="fee" placeholder="Platform Fee %" />
-<input type="number" id="expenses" placeholder="Other Expenses" />
-<button onclick="calculateRate()">Calculate</button>
-<div id="result"></div>
+
+<h2>Freelancing Profit Calculator</h2>
+
+<label for="hoursWorked">Hours Worked:</label>
+<input type="number" id="hoursWorked" min="0" value="5" />
+
+<label for="targetIncome">Target Income ($):</label>
+<input type="number" id="targetIncome" min="0" value="50" />
+
+<label for="platformSelect">Select Platform:</label>
+<select id="platformSelect">
+  <option value="">-- Select Platform --</option>
+  <option value="Fiverr">Fiverr (20%)</option>
+  <option value="Upwork">Upwork (5%)</option>
+  <option value="Freelancer">Freelancer (10%)</option>
+  <option value="Guru">Guru (8%)</option>
+  <option value="PeoplePerHour">PeoplePerHour (20%)</option>
+  <option value="Toptal">Toptal (15%)</option>
+  <option value="Other">Other (Custom Fee)</option>
+</select>
+
+<label for="platformFee">Platform Fee (%):</label>
+<input type="number" id="platformFee" min="0" max="100" step="0.01" value="20" />
+
+<label for="countrySelect">Select Country:</label>
+<select id="countrySelect">
+  <option value="">-- Select Country --</option>
+  <option value="India">India (10%)</option>
+  <option value="USA">USA (15%)</option>
+  <option value="UK">UK (20%)</option>
+  <option value="Canada">Canada (12%)</option>
+  <option value="Australia">Australia (18%)</option>
+  <option value="Germany">Germany (22%)</option>
+  <option value="France">France (25%)</option>
+  <option value="Other">Other (Custom Tax)</option>
+</select>
+
+<label for="taxRate">Tax Rate (%):</label>
+<input type="number" id="taxRate" min="0" max="100" step="0.01" value="10" />
+
+<button onclick="calculateProfit()">Calculate</button>
+
+<div class="result" id="resultArea"></div>
 
 <script>
-function calculateRate() {
-  let hours = +document.getElementById('hours').value;
-  let targetIncome = +document.getElementById('targetIncome').value;
-  let taxPercent = +document.getElementById('tax').value;
-  let feePercent = +document.getElementById('fee').value;
-  let expenses = +document.getElementById('expenses').value;
+const platformFees = {
+  "Fiverr": 20,
+  "Upwork": 5,
+  "Freelancer": 10,
+  "Guru": 8,
+  "PeoplePerHour": 20,
+  "Toptal": 15
+};
 
-  if (!hours || !targetIncome) {
-    document.getElementById('result').innerText = 'Please enter valid hours worked and target income.';
+const countryTaxes = {
+  "India": 10,
+  "USA": 15,
+  "UK": 20,
+  "Canada": 12,
+  "Australia": 18,
+  "Germany": 22,
+  "France": 25
+};
+
+const platformSelect = document.getElementById('platformSelect');
+const platformFeeInput = document.getElementById('platformFee');
+
+const countrySelect = document.getElementById('countrySelect');
+const taxRateInput = document.getElementById('taxRate');
+
+platformSelect.addEventListener('change', () => {
+  const val = platformSelect.value;
+  if(platformFees[val] !== undefined) {
+    platformFeeInput.value = platformFees[val];
+    platformFeeInput.disabled = true;
+  } else {
+    platformFeeInput.disabled = false;
+    platformFeeInput.value = '';
+  }
+});
+
+countrySelect.addEventListener('change', () => {
+  const val = countrySelect.value;
+  if(countryTaxes[val] !== undefined) {
+    taxRateInput.value = countryTaxes[val];
+    taxRateInput.disabled = true;
+  } else {
+    taxRateInput.disabled = false;
+    taxRateInput.value = '';
+  }
+});
+
+function calculateProfit() {
+  const hours = parseFloat(document.getElementById('hoursWorked').value);
+  const targetIncome = parseFloat(document.getElementById('targetIncome').value);
+  const platformFeePercent = parseFloat(platformFeeInput.value);
+  const taxRatePercent = parseFloat(taxRateInput.value);
+
+  if(isNaN(hours) || hours <= 0) {
+    alert('Please enter a valid number of hours worked.');
+    return;
+  }
+  if(isNaN(targetIncome) || targetIncome <= 0) {
+    alert('Please enter a valid target income.');
+    return;
+  }
+  if(isNaN(platformFeePercent) || platformFeePercent < 0 || platformFeePercent > 100) {
+    alert('Please enter a valid platform fee percentage.');
+    return;
+  }
+  if(isNaN(taxRatePercent) || taxRatePercent < 0 || taxRatePercent > 100) {
+    alert('Please enter a valid tax rate percentage.');
     return;
   }
 
-  let taxAmount = targetIncome * taxPercent / 100 || 0;
-  let feeAmount = targetIncome * feePercent / 100 || 0;
-  let expensesAmount = expenses || 0;
+  // Calculate Gross Income needed before fees and tax
+  // Formula: targetIncome = GrossIncome * (1 - platformFee%) * (1 - taxRate%)
+  // => GrossIncome = targetIncome / ((1 - platformFee%) * (1 - taxRate%))
 
-  let totalIncomeNeeded = targetIncome + taxAmount + feeAmount + expensesAmount;
+  const platformFeeDecimal = platformFeePercent / 100;
+  const taxRateDecimal = taxRatePercent / 100;
 
-  let hourlyRate = totalIncomeNeeded / hours;
+  const grossIncome = targetIncome / ((1 - platformFeeDecimal) * (1 - taxRateDecimal));
+  const platformFeeAmount = grossIncome * platformFeeDecimal;
+  const taxableAmount = grossIncome - platformFeeAmount;
+  const taxAmount = taxableAmount * taxRateDecimal;
+  const netIncome = grossIncome - platformFeeAmount - taxAmount;
+  const hourlyRate = grossIncome / hours;
 
-  document.getElementById('result').innerText = 'Required hourly rate: $' + hourlyRate.toFixed(2);
+  const resultDiv = document.getElementById('resultArea');
+  resultDiv.innerHTML = `
+    <strong>Results:</strong><br/>
+    Gross Income (before fees & tax): $${grossIncome.toFixed(2)}<br/>
+    Platform Fee (${platformFeePercent}%): $${platformFeeAmount.toFixed(2)}<br/>
+    Tax (${taxRatePercent}%): $${taxAmount.toFixed(2)}<br/>
+    Net Income (after fees & tax): $${netIncome.toFixed(2)}<br/>
+    Hourly Rate: $${hourlyRate.toFixed(2)}<br/>
+  `;
 }
 </script>
+
 </body>
 </html>
