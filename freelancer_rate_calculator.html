@@ -1,0 +1,88 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Freelancer Rate Calculator</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    max-width: 600px;
+    margin: 20px auto;
+    padding: 15px;
+    background-color: #f5f5f5;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    border-radius: 8px;
+  }
+  h2 {
+    text-align: center;
+    color: #333;
+  }
+  input[type=number] {
+    width: 100%;
+    padding: 10px;
+    margin: 8px 0 16px 0;
+    box-sizing: border-box;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+  }
+  button {
+    width: 100%;
+    background-color: #007bff;
+    color: white;
+    padding: 12px;
+    font-size: 18px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  button:hover {
+    background-color: #0056b3;
+  }
+  #result {
+    margin-top: 20px;
+    font-size: 20px;
+    text-align: center;
+    color: #222;
+    font-weight: bold;
+  }
+</style>
+</head>
+<body>
+<h2>Freelancer Rate Calculator</h2>
+<input type="number" id="hours" placeholder="Hours worked" />
+<input type="number" id="targetIncome" placeholder="Target Income (in your currency)" />
+<input type="number" id="tax" placeholder="Tax %" />
+<input type="number" id="fee" placeholder="Platform Fee %" />
+<input type="number" id="expenses" placeholder="Other Expenses" />
+<button onclick="calculateRate()">Calculate</button>
+<div id="result"></div>
+
+<script>
+function calculateRate() {
+  let hours = +document.getElementById('hours').value;
+  let targetIncome = +document.getElementById('targetIncome').value;
+  let taxPercent = +document.getElementById('tax').value;
+  let feePercent = +document.getElementById('fee').value;
+  let expenses = +document.getElementById('expenses').value;
+
+  if (!hours || !targetIncome) {
+    document.getElementById('result').innerText = 'Please enter valid hours worked and target income.';
+    return;
+  }
+
+  let taxAmount = targetIncome * taxPercent / 100 || 0;
+  let feeAmount = targetIncome * feePercent / 100 || 0;
+  let expensesAmount = expenses || 0;
+
+  let totalIncomeNeeded = targetIncome + taxAmount + feeAmount + expensesAmount;
+
+  let hourlyRate = totalIncomeNeeded / hours;
+
+  document.getElementById('result').innerText = 'Required hourly rate: $' + hourlyRate.toFixed(2);
+}
+</script>
+</body>
+</html>
