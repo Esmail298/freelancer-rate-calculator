@@ -1,29 +1,42 @@
 <!DOCTYPE html>
-<html lang="bn">
+<html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Freelancing Profit Calculator</title>
-  <style>
-    body { font-family: Arial, sans-serif; max-width: 600px; margin: 20px auto; }
-    label { display: block; margin-top: 15px; }
-    input, select { width: 100%; padding: 8px; margin-top: 5px; }
-    input[type="number"] { -moz-appearance: textfield; }
-    input::-webkit-outer-spin-button,
-    input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-    button { margin-top: 20px; padding: 10px 15px; font-size: 16px; }
-    .result { margin-top: 20px; background: #f0f0f0; padding: 15px; border-radius: 5px; }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Freelancing Profit Calculator</title>
+<style>
+  body { font-family: Arial, sans-serif; max-width: 500px; margin: 20px auto; background: #f9f9f9; padding: 15px; border-radius: 8px; }
+  label { display: block; margin-top: 15px; font-weight: bold; }
+  input, select { width: 100%; padding: 8px; margin-top: 5px; font-size: 16px; }
+  input[type="number"] { -moz-appearance: textfield; }
+  input::-webkit-outer-spin-button,
+  input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  button { margin-top: 20px; padding: 12px; font-size: 18px; background: #28a745; color: white; border: none; border-radius: 5px; cursor: pointer; }
+  button:hover { background: #218838; }
+  .result { margin-top: 20px; background: #fff; padding: 15px; border-radius: 8px; box-shadow: 0 0 8px #ccc; font-size: 16px; }
+</style>
 </head>
 <body>
 
-<h2>Freelancing Profit Calculator</h2>
+<h2 style="text-align:center;">Freelancing Profit Calculator</h2>
 
 <label for="hoursWorked">Hours Worked:</label>
 <input type="number" id="hoursWorked" min="0" value="5" />
 
-<label for="targetIncome">Target Income ($):</label>
+<label for="targetIncome">Target Income:</label>
 <input type="number" id="targetIncome" min="0" value="50" />
+
+<label for="currencySelect">Select Currency:</label>
+<select id="currencySelect">
+  <option value="USD" selected>USD ($)</option>
+  <option value="EUR">EUR (€)</option>
+  <option value="GBP">GBP (£)</option>
+  <option value="INR">INR (₹)</option>
+  <option value="BDT">BDT (৳)</option>
+  <option value="AUD">AUD (A$)</option>
+  <option value="CAD">CAD (C$)</option>
+  <option value="JPY">JPY (¥)</option>
+</select>
 
 <label for="platformSelect">Select Platform:</label>
 <select id="platformSelect">
@@ -56,19 +69,12 @@
 <label for="taxRate">Tax Rate (%):</label>
 <input type="number" id="taxRate" min="0" max="100" step="0.01" value="10" />
 
-<label for="currencySelect">Select Currency:</label>
-<select id="currencySelect">
-  <option value="USD">USD ($)</option>
-  <option value="EUR">EUR (€)</option>
-  <option value="GBP">GBP (£)</option>
-  <option value="INR">INR (₹)</option>
-</select>
-
 <button onclick="calculateProfit()">Calculate</button>
 
 <div class="result" id="resultArea"></div>
 
 <script>
+// ডিফল্ট প্ল্যাটফর্ম ফি এবং ট্যাক্স রেট
 const platformFees = {
   "Fiverr": 20,
   "Upwork": 5,
@@ -88,90 +94,124 @@ const countryTaxes = {
   "France": 25
 };
 
+// কারেন্সি সিম্বল
+const currencySymbols = {
+  "USD": "$",
+  "EUR": "€",
+  "GBP": "£",
+  "INR": "₹",
+  "BDT": "৳",
+  "AUD": "A$",
+  "CAD": "C$",
+  "JPY": "¥"
+};
+
 const platformSelect = document.getElementById('platformSelect');
 const platformFeeInput = document.getElementById('platformFee');
-
 const countrySelect = document.getElementById('countrySelect');
 const taxRateInput = document.getElementById('taxRate');
+const currencySelect = document.getElementById('currencySelect');
+const hoursWorkedInput = document.getElementById('hoursWorked');
+const targetIncomeInput = document.getElementById('targetIncome');
 
 platformSelect.addEventListener('change', () => {
   const val = platformSelect.value;
-  if(platformFees[val] !== undefined) {
+  if (platformFees[val] !== undefined) {
     platformFeeInput.value = platformFees[val];
     platformFeeInput.disabled = true;
   } else {
     platformFeeInput.disabled = false;
     platformFeeInput.value = '';
   }
+  saveData();
 });
 
 countrySelect.addEventListener('change', () => {
   const val = countrySelect.value;
-  if(countryTaxes[val] !== undefined) {
+  if (countryTaxes[val] !== undefined) {
     taxRateInput.value = countryTaxes[val];
     taxRateInput.disabled = true;
   } else {
     taxRateInput.disabled = false;
     taxRateInput.value = '';
   }
+  saveData();
 });
 
+// ইউজারের ডেটা সেভ করার ফাংশন
+function saveData() {
+  const data = {
+    hoursWorked: hoursWorkedInput.value,
+    targetIncome: targetIncomeInput.value,
+    platformSelect: platformSelect.value,
+    platformFee: platformFeeInput.value,
+    countrySelect: countrySelect.value,
+    taxRate: taxRateInput.value,
+    currency: currencySelect.value
+  };
+  localStorage.setItem('freelanceCalcData', JSON.stringify(data));
+}
+
+// লোড করার ফাংশন
+function loadData() {
+  const data = JSON.parse(localStorage.getItem('freelanceCalcData'));
+  if (data) {
+    hoursWorkedInput.value = data.hoursWorked || 5;
+    targetIncomeInput.value = data.targetIncome || 50;
+    platformSelect.value = data.platformSelect || '';
+    platformFeeInput.value = data.platformFee || 20;
+    countrySelect.value = data.countrySelect || '';
+    taxRateInput.value = data.taxRate || 10;
+    currencySelect.value = data.currency || 'USD';
+
+    platformFeeInput.disabled = platformFees.hasOwnProperty(platformSelect.value);
+    taxRateInput.disabled = countryTaxes.hasOwnProperty(countrySelect.value);
+  }
+}
+
 function calculateProfit() {
-  const hours = parseFloat(document.getElementById('hoursWorked').value);
-  const targetIncome = parseFloat(document.getElementById('targetIncome').value);
+  const hours = parseFloat(hoursWorkedInput.value);
+  const targetIncome = parseFloat(targetIncomeInput.value);
   const platformFeePercent = parseFloat(platformFeeInput.value);
   const taxRatePercent = parseFloat(taxRateInput.value);
+  const currency = currencySelect.value;
+  const currencySymbol = currencySymbols[currency] || '$';
 
-  if(isNaN(hours) || hours <= 0) {
+  if (isNaN(hours) || hours <= 0) {
     alert('Please enter a valid number of hours worked.');
     return;
   }
-  if(isNaN(targetIncome) || targetIncome <= 0) {
+  if (isNaN(targetIncome) || targetIncome <= 0) {
     alert('Please enter a valid target income.');
     return;
   }
-  if(isNaN(platformFeePercent) || platformFeePercent < 0 || platformFeePercent > 100) {
+  if (isNaN(platformFeePercent) || platformFeePercent < 0 || platformFeePercent > 100) {
     alert('Please enter a valid platform fee percentage.');
     return;
   }
-  if(isNaN(taxRatePercent) || taxRatePercent < 0 || taxRatePercent > 100) {
+  if (isNaN(taxRatePercent) || taxRatePercent < 0 || taxRatePercent > 100) {
     alert('Please enter a valid tax rate percentage.');
     return;
   }
 
-  // Calculate Gross Income needed before fees and tax
-  // Formula: targetIncome = GrossIncome * (1 - platformFee%) * (1 - taxRate%)
-  // => GrossIncome = targetIncome / ((1 - platformFee%) * (1 - taxRate%))
+  const pf = platformFeePercent / 100;
+  const tax = taxRatePercent / 100;
 
-  const platformFeeDecimal = platformFeePercent / 100;
-  const taxRateDecimal = taxRatePercent / 100;
-
-  const grossIncome = targetIncome / ((1 - platformFeeDecimal) * (1 - taxRateDecimal));
-  const platformFeeAmount = grossIncome * platformFeeDecimal;
+  // গ্রস ইনকাম হিসাব (ফি ও ট্যাক্সের আগে)
+  const grossIncome = targetIncome / ((1 - pf) * (1 - tax));
+  const platformFeeAmount = grossIncome * pf;
   const taxableAmount = grossIncome - platformFeeAmount;
-  const taxAmount = taxableAmount * taxRateDecimal;
+  const taxAmount = taxableAmount * tax;
   const netIncome = grossIncome - platformFeeAmount - taxAmount;
   const hourlyRate = grossIncome / hours;
 
-  const currency = document.getElementById('currencySelect').value;
-  const currencySymbols = {
-    "USD": "$",
-    "EUR": "€",
-    "GBP": "£",
-    "INR": "₹"
-  };
+  saveData();
 
-  const resultDiv = document.getElementById('resultArea');
-  resultDiv.innerHTML = `
+  document.getElementById('resultArea').innerHTML = `
     <strong>Results:</strong><br/>
-    Gross Income (before fees & tax): ${currencySymbols[currency]}${grossIncome.toFixed(2)}<br/>
-    Platform Fee (${platformFeePercent}%): ${currencySymbols[currency]}${platformFeeAmount.toFixed(2)}<br/>
-    Tax (${taxRatePercent}%): ${currencySymbols[currency]}${taxAmount.toFixed(2)}<br/>
-    Net Income (after fees & tax): ${currencySymbols[currency]}${netIncome.toFixed(2)}<br/>
-    Hourly Rate: ${currencySymbols[currency]}${hourlyRate.toFixed(2)}<br/>
+    Gross Income (before fees & tax): ${currencySymbol}${grossIncome.toFixed(2)}<br/>
+    Platform Fee (${platformFeePercent}%): ${currencySymbol}${platformFeeAmount.toFixed(2)}<br/>
+    Tax (${taxRatePercent}%): ${currencySymbol}${taxAmount.toFixed(2)}<br/>
+    Net Income (after fees & tax): ${currencySymbol}${netIncome.toFixed(2)}<br/>
+    Hourly Rate: ${currencySymbol}${hourlyRate.toFixed(2)}
   `;
-}
-</script>
-
-</body>
-</html>
