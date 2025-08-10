@@ -1,1 +1,0 @@
-# freelancer-rate-calculator
